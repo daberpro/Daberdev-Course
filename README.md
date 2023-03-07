@@ -2,7 +2,7 @@
 
 ## Envoritment
 1. Svelte
-dengan tambahan SPA custom yaitu ```SPA.js```
+dengan tambahan SPA custom yaitu ```SPA.js``` yang saya buat sendiri
 2. Svelte Material UI (Hanya untuk Admin page)
 [Svelte Material UI (MUI)](https://sveltematerialui.com/)
 3. mongoose (npm)
@@ -16,7 +16,7 @@ dengan tambahan SPA custom yaitu ```SPA.js```
 11. passport-github2 (npm)
 12. passport-google-oauth20 (npm)
 13. vite (npm)
-14. aos (CDN)
+14. aos (npm)
 
 ## Server
 Daberdev course menggunakan microservice sederhana dengan port custom
