@@ -38,7 +38,7 @@
 <div class="container">
 	<h1>404 Not Found</h1>
 	<p>
-		Oops! page you're looking for doesn't exits on our server
+		Oops! page you're looking for doesn't exists on our server
 	</p>
 	<span data-link href="/">Back to HomePage</span>
 </div>

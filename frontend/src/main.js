@@ -1,6 +1,6 @@
-import AOS from 'aos' 
+// import AOS from 'aos' 
 import './app.css'
-import 'aos/dist/aos.css'
+// import 'aos/dist/aos.css'
 import App from './App.svelte'
 import NotFound from './404.svelte'
 import SPA from './SPA.js'
@@ -85,7 +85,7 @@ route.register("/payment-error",{
   }
 })
 route.render();
-AOS.init();
+// AOS.init();
 
 
 // export default app
