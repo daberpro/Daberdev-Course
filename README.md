@@ -25,8 +25,11 @@ Daberdev course menggunakan microservice sederhana dengan port custom
 Daberdev course di desain dengan menggunakan css3 tanpa framrwork apapun (khusus user page)
 
 ## riview
-screenshot ini hanyalah tampilan dari saat repo ini di push. 
-mungkin kedepanya akan ada beberapa fitur tambahan dan foto ini akan di update.
+ screenshot ini hanyalah tampilan dari saat repo ini di push.  
+ mungkin kedepanya akan ada beberapa fitur tambahan dan foto ini akan di update.
+
+> untuk page admin akan segera saya masukan riview nya segera
+ 
 
 ![Daberdev Course](https://i.ibb.co/p2Xrg1v/Fjw-XJ8-EOOX.png "Daberdev Course")
 ![Daberdev Course](https://i.ibb.co/Fgb8n5R/Screenshot-382.png "Daberdev Course")
