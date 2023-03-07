@@ -8,6 +8,7 @@
 		flex-direction: column;
 		padding: 20px;
 		border-radius: 20px;
+		background-color: #282c35;
 
 		/*position: absolute;
 		top: 0px;
@@ -96,6 +97,7 @@
 	@media screen and (min-width: 0px) and (max-width: 400px){
 		.login{
 			width: 100%;
+			border-radius: 0px;
 		}
 	}
 </style>

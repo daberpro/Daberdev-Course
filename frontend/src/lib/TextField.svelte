@@ -78,10 +78,12 @@
 <script>
    let value = "";
    export let label = ""
+   export let width = null
+   export let element = null;
    export let getValue = ()=>{};
 </script>
 
-<div class="input-contain">
+<div search-courses id={$$props.id || ''} bind:this={element} class="input-contain" style={width? `width: ${width};` : ''}>
     <input on:input={d => getValue(d.target.value)} bind:value={value} type="text" id="fname" name="fname" autocomplete="off" mvalue={value} aria-labelledby="placeholder-fname">
     <label class="placeholder-text" for="fname" id="placeholder-fname">
         <div class="text">{label}</div>

@@ -1,8 +1,12 @@
+import AOS from 'aos' 
 import './app.css'
+import 'aos/dist/aos.css'
 import App from './App.svelte'
 import NotFound from './404.svelte'
 import SPA from './SPA.js'
 import Login from './Login.svelte'
+import Logout from './Logout.svelte'
+import Profile from './user-view/profile.svelte'
 import PaymentSuccess from './payment-view/success.svelte'
 import PaymentFailed from './payment-view/failed.svelte'
 import PaymentError from './payment-view/error.svelte'
@@ -26,6 +30,26 @@ route.register("/login",{
   render({params}){
     return new Login({
       target: document.getElementById('app')
+    })
+  }
+})
+route.register("/logout",{
+  render({params}){
+    return new Logout({
+      target: document.getElementById('app')
+    })
+  }
+})
+route.register("/profile",{
+  render({params}){
+    return new Profile({
+      target: document.getElementById('app'),
+      props:{
+        tokens: {
+          refreshToken: params.get("ref_token"),
+          token: params.get("token")
+        }
+      }
     })
   }
 })
@@ -61,6 +85,7 @@ route.register("/payment-error",{
   }
 })
 route.render();
+AOS.init();
 
 
 // export default app

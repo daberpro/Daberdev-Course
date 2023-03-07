@@ -9,7 +9,6 @@ server.use(cors("*"));
 server.use("/api/v1",v1.checkout);
 
 server.use("/notification",notification);
-
 server.listen(process.env.PAYMENT_PORT,'0.0.0.0',()=>{
 	console.log('server running at port '+process.env.PAYMENT_PORT);
 });

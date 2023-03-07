@@ -38,7 +38,26 @@
 </style>
 
 <script>
+	import {onMount} from 'svelte'
 	export let order_id = "";
+
+	onMount(_=>{
+
+		const tokens = JSON.parse(localStorage.getItem('daberdev-payment'));
+		fetch(`http://${location.hostname}:8083/order-status`,{
+			method: "POST",
+			headers:{
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({tokens})
+		})
+		.then(d => d.json())
+		.then(console.log)
+		.catch(console.log);
+
+
+	});
+
 </script>
 
 <div class="container">

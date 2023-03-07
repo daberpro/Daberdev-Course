@@ -24,6 +24,7 @@ export default class SPA{
 
   register(path,component){
     this.components.set(path,component);
+    if(!/\/$/igm.test(path)) this.components.set(path+"/",component);
   }
 
   checkPath(path){

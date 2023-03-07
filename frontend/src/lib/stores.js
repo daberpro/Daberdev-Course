@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 
 let show_basket = writable(false);
 let show_details = writable(false);
+let user_data = writable({});
 let show_confirm = writable({show: false, data: {}});
 let details_info = writable({
 	title: "title",
@@ -12,5 +13,6 @@ export {
 	show_details,
 	details_info,
 	show_basket,
-	show_confirm
+	show_confirm,
+	user_data
 }

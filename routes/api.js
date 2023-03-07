@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const midtransClient = require('midtrans-client');
 const checkout = express.Router();
@@ -23,7 +24,7 @@ checkout.post("/pay",(req,res)=>{
 	let snap = new midtransClient.Snap({
 	    // Set to true if you want Production Environment (accept real transaction).
 	    isProduction : false,
-	    serverKey : "SB-Mid-server-mC7lyCbLyHz0cwnqMdQeoYeI"
+	    serverKey : process.env.PAYMENT_SERVER_KEY
 	});
 
 	let parameter = {

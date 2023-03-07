@@ -9,18 +9,18 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GithubStrategy = require('passport-github2').Strategy;
 const db = require('./db');
 
-function generateToken(name){
+function generateToken(username){
 	const token = jsonwebtoken.sign({
-            name
+            username
         },
         process.env.SECRET, {
-            expiresIn: '15s'
+            expiresIn: '15m'
         }
     );
     const refreshToken = jsonwebtoken.sign({
-            name
+            username
         },
-        process.env.SECRET
+        process.env.REFRESH
     );
 
     return {
@@ -35,7 +35,7 @@ function generateToken(name){
 
 function GoogleSaveToDatabase(profile,cb) {
     profile.status = "success";
-    const tokens = generateToken(profile.displayName);
+    const tokens = generateToken(profile.displayName.replace(/(\r|\t|\n|\s|\s+)/igm, "") + profile.id);
     const courses = new db.CoursesModel({
         courses: []
     });
@@ -94,65 +94,9 @@ function GoogleSaveToDatabase(profile,cb) {
             await save_user().catch(d => profile.status = "failed");
             cb(null, profile);
         } else {
-            cb(null, profile);
-        }
-    });
-}
-
-function GithubSaveToDatabase(profile,cb) {
-    profile.status = "success";
-    const courses = new db.CoursesModel({
-        courses: []
-    });
-    const order_history = new db.OrderHistoryModel({
-        courses: []
-    });
-    const user = new db.UserModel({
-        name: profile.displayName,
-        username: profile.username.replace(/(\r|\t|\n|\s|\s+)/igm, "") + profile.id,
-        email: "example@example.com",
-        avatar: profile.photos[0].value,
-        courses: courses._id,
-        order_history: order_history._id
-    });
-
-    const save_courses = async() => {
-        return new Promise((res, rej) => {
-            courses.save(e => {
-                if (e) rej(e);
-                res(null);
-            });
-        });
-    }
-
-    const save_order_history = async() => {
-        return new Promise((res, rej) => {
-            order_history.save(e => {
-                if (e) rej(e);
-                res(null);
-            });
-        });
-    }
-
-    const save_user = async() => {
-        return new Promise((res, rej) => {
-            user.save(e => {
-                if (e) rej(e);
-                res(null);
-            });
-        });
-    }
-
-    db.UserModel.findOne({
-        username: profile.username.replace(/(\r|\t|\n|\s|\s+)/igm, "") + profile.id
-    }, async(err, res) => {
-        if (err) profile.status = "failed";
-        if (!res) {
-            await save_courses().catch(d => profile.status = "failed");
-            await save_order_history().catch(d => profile.status = "failed");
-            await save_user().catch(d => profile.status = "failed");
-            cb(null, profile);
-        } else {
+            await db.UserModel.updateOne({_id: res._id},{
+                ref_token: tokens.refreshToken
+            })
             cb(null, profile);
         }
     });
@@ -192,7 +136,7 @@ app.get('/auth/google/callback',
     function(req, res) {
         // Successful authentication, redirect home.
         if(req.user.status === "failed") return res.redirect(`http://127.0.0.1:${process.env.MAIN_PORT}/login`);
-        res.redirect(`http://127.0.0.1:${process.env.MAIN_PORT}/?token=${req.user.tokens.token}&ref_token=token=${req.user.tokens.refreshToken}`);
+        res.redirect(`http://127.0.0.1:${process.env.MAIN_PORT}/profile?token=${req.user.tokens.token}&ref_token=${req.user.tokens.refreshToken}`);
     });
 
 
@@ -200,6 +144,72 @@ app.get('/auth/google/callback',
 
 // GITHUB AUTHENTICATE
 // ===================================================
+
+function GithubSaveToDatabase(profile,cb) {
+    profile.status = "success";
+    const tokens = generateToken(profile.username.replace(/(\r|\t|\n|\s|\s+)/igm, "") + profile.id);
+    const courses = new db.CoursesModel({
+        courses: []
+    });
+    const order_history = new db.OrderHistoryModel({
+        courses: []
+    });
+    const user = new db.UserModel({
+        name: profile.displayName,
+        username: profile.username.replace(/(\r|\t|\n|\s|\s+)/igm, "") + profile.id,
+        email: "example@example.com",
+        avatar: profile.photos[0].value,
+        courses: courses._id,
+        order_history: order_history._id,
+        ref_token: tokens.refreshToken
+    });
+
+    const save_courses = async() => {
+        return new Promise((res, rej) => {
+            courses.save(e => {
+                if (e) rej(e);
+                res(null);
+            });
+        });
+    }
+
+    const save_order_history = async() => {
+        return new Promise((res, rej) => {
+            order_history.save(e => {
+                if (e) rej(e);
+                res(null);
+            });
+        });
+    }
+
+    const save_user = async() => {
+        return new Promise((res, rej) => {
+            user.save(e => {
+                if (e) rej(e);
+                res(null);
+            });
+        });
+    }
+
+    db.UserModel.findOne({
+        username: profile.username.replace(/(\r|\t|\n|\s|\s+)/igm, "") + profile.id
+    }, async(err, res) => {
+        if (err) profile.status = "failed";
+        profile.tokens = tokens;
+        if (!res) {
+            await save_courses().catch(d => profile.status = "failed");
+            await save_order_history().catch(d => profile.status = "failed");
+            await save_user().catch(d => profile.status = "failed");
+            cb(null, profile);
+        } else {
+            await db.UserModel.updateOne({_id: res._id},{
+                ref_token: tokens.refreshToken
+            })
+            cb(null, profile);
+        }
+    });
+}
+
 passport.use(new GithubStrategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
@@ -221,8 +231,8 @@ app.get("/auth/github/callback", passport.authenticate('github', {
     failureRedirect: '/login/auth'
 }), function(req, res) {
     // console.log(req.user);
-    // Successful authentication, redirect home.
-    res.redirect(`http://127.0.0.1:${process.env.MAIN_PORT}`);
+    if(req.user.status === "failed") return res.redirect(`http://127.0.0.1:${process.env.MAIN_PORT}/login`);
+    res.redirect(`http://127.0.0.1:${process.env.MAIN_PORT}/profile?token=${req.user.tokens.token}&ref_token=${req.user.tokens.refreshToken}`);
 })
 
 // ===================================================
@@ -232,40 +242,6 @@ app.get("/", (req, res) => {
 });
 
 app.use(express.json());
-
-app.post("/token", (req, res) => {
-
-});
-
-app.post("/create-token", (req, res) => {
-    const token = jsonwebtoken.sign({
-            name: req.body.name
-        },
-        process.env.SECRET, {
-            expiresIn: '15s'
-        }
-    );
-    const refreshToken = jsonwebtoken.sign({
-            name: req.body.name
-        },
-        process.env.SECRET
-    );
-    res.json({
-        token,
-        refreshToken
-    });
-});
-
-app.post("/verify", (req, res) => {
-
-    const [_, token] = req.headers.authorization.split(' ');
-    const data = jsonwebtoken.verify(token, process.env.SECRET);
-
-    res.json({
-        data
-    })
-
-});
 
 app.listen(process.env.AUTH_PORT, '0.0.0.0', () => {
     console.log("login and register server is running on port "+process.env.AUTH_PORT);
