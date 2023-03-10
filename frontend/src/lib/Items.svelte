@@ -190,7 +190,7 @@
 	orderItems.subscribe(d =>{
 		total = 0;
 		item = d;
-		console.log(d);
+		// console.log(d);
 		d.forEach( e=> total += e.price);
 	});
 	show_basket.subscribe(d =>{
@@ -212,9 +212,9 @@
 			<span style="color: gray;">please add some item to checkout</span>
 		{/if}
 		{#each items as data, i}
-			<div class="item">
+			<div class="item" id={data._id}>
 				<div class="thumbnail">
-					<img src={'http://127.0.0.1:8085/course_thumbnail/'+(data.thumbnail.length === 0? 'default.png' : data.thumbnail)}/>
+					<img src={'http://daberdev.id:8085/course_thumbnail/'+(data.thumbnail.length === 0? 'default.png' : data.thumbnail)}/>
 				</div>
 				<b>{data.title}</b>
 				<span>
@@ -240,7 +240,7 @@
 		</span>
 		<button style={total > 0? '' : `filter:blur(3px)`} primary on:click={async _=>{
 			if(total !== 0){
-				
+				console.log('hallo')
 				const user_data = {
 					first_name: "Ari",
 			        last_name: "Susanto",
@@ -267,10 +267,10 @@
 						"Content-Type": "application/json"
 					},
 					body: JSON.stringify(user_data)
-				});
+				}).catch(console.log);
 
 				if(response.ok){
-					const result = await response.json();
+					const result = await response.json().catch(console.log);
 					// console.log(result)
 					localStorage.setItem("daberdev-payment",JSON.stringify({token: result.token, current_order: result.order_id}));
 					const token = JSON.parse(localStorage.getItem("daberdev-tokens")).token

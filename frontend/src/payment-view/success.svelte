@@ -34,25 +34,39 @@
 		color: #009688;
 	}
 
+	.container b{
+		font-family: 'Poppins', sans-serif;
+		font-weight: bold;
+		color: white;
+
+	}
+
 
 </style>
 
 <script>
 	import {onMount} from 'svelte'
 	export let order_id = "";
+	let status = "";
 
 	onMount(_=>{
 
-		const tokens = JSON.parse(localStorage.getItem('daberdev-payment'));
+		const data = JSON.parse(localStorage.getItem('daberdev-payment'));
+		const {token} = JSON.parse(localStorage.getItem('daberdev-tokens'));
 		fetch(`http://${location.hostname}:8083/order-status`,{
 			method: "POST",
 			headers:{
-				"Content-Type": "application/json"
+				"Content-Type": "application/json",
+				"Authorization": 'Bearer '+ token
 			},
-			body: JSON.stringify({tokens})
+			body: JSON.stringify(data)
 		})
 		.then(d => d.json())
-		.then(console.log)
+		.then(d => {
+
+			status = d.status;
+
+		})
 		.catch(console.log);
 
 
@@ -62,6 +76,9 @@
 
 <div class="container">
 	<h1>Payment Success</h1>
+	<b>
+		status {status}
+	</b>
 	<p>
 		order id : {order_id}
 	</p>

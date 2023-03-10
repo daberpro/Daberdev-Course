@@ -8,6 +8,6 @@ server.use("*",(req,res)=>{
 	res.sendFile(__dirname+"/frontend/dist/index.html");
 });
 
-server.listen(process.env.MAIN_PORT,'0.0.0.0',()=>{
+server.listen(8080,'akulagi.aku',()=>{
 	console.log(`main server running at ${process.env.MAIN_PORT}`);
 });

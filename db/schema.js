@@ -1,4 +1,5 @@
 const {Schema, ObjectId} = require('mongoose');
+const auto_populate = require('mongoose-autopopulate');
 
 const UserSchema = new Schema({
 	name: {
@@ -23,13 +24,9 @@ const UserSchema = new Schema({
 		type: String,
 		require: [true,'user avatar cannot be empty']
 	},
-	courses: {
-		type: ObjectId,
-		ref: 'course',
-		require: [true,'every user must have courses']
-	},
 	order_history: {
 		type: ObjectId,
+		autopopulate: true,
 		ref: 'order_histori',
 		require: [true,'every user must have order history']
 	},
@@ -39,21 +36,23 @@ const UserSchema = new Schema({
 	},
 	quiz: {
 		type: [ObjectId],
-		ref: 'quiz'
+		ref: 'quiz',
+		autopopulate: true
 	},
 	admin: {
 		type: Boolean,
 		require: true
 	},
-});
-
-const CoursesSchema = new Schema({
+	super_admin: {
+		type: Boolean
+	},
 	courses: {
 		type: [ObjectId],
 		ref: 'cour',
-		require: [true,'courses must be an Array']
+		autopopulate: true
 	}
 });
+UserSchema.plugin(auto_populate);
 
 const CourseSchema = new Schema({
 	course_name: {
@@ -67,11 +66,13 @@ const CourseSchema = new Schema({
 	owner: {
 		ref: 'user',
 		type: ObjectId,
+		autopopulate: true,
 		require: [true,'course must has an owner']
 	},
 	curiculum: {
 		ref: 'curiculum',
 		type: ObjectId,
+		autopopulate: true,
 		require: [true,'course must has a curiculum']
 	},
 	course_description: {
@@ -83,6 +84,7 @@ const CourseSchema = new Schema({
 		require: true
 	}
 });
+CourseSchema.plugin(auto_populate);
 
 CourseSchema.index({
 	"$**": 'text'
@@ -102,9 +104,11 @@ const Curiculum = new Schema({
 	},
 	curiculum_quiz: {
 		type: [ObjectId],
-		ref: 'quiz'
+		ref: 'quiz',
+		autopopulate: true
 	}
 });
+Curiculum.plugin(auto_populate);
 
 const QuizSchema = new Schema({
 	title: {
@@ -122,19 +126,32 @@ const OrderSchema = new Schema({
 		type: String,
 		require: [true,'course must has an order id']
 	},
+	status:{
+		type: String,
+		require: true
+	},
 	time: {
 		type: String,
 		require: [true,'course must has a time order']
+	},
+	courses: {
+		type: [ObjectId],
+		ref: 'cour',
+		autopopulate: true,
+		require: [true,'every user must have courses']
 	}
 });
+OrderSchema.plugin(auto_populate);
 
 const OrderHistorySchema = new Schema({
 	order_history: {
 		type: [ObjectId],
 		ref: 'order',
+		autopopulate: true,
 		require: [true,'courses must be an Array']
 	}
 });
+OrderHistorySchema.plugin(auto_populate);
 
 const AdminSchema = new Schema({
 	admin: {
@@ -142,10 +159,10 @@ const AdminSchema = new Schema({
 		ref: 'user'
 	}
 });
+AdminSchema.plugin(auto_populate);
 
 module.exports = {
 	UserSchema,
-	CoursesSchema,
 	OrderHistorySchema,
 	CourseSchema,
 	Curiculum,

@@ -2,13 +2,13 @@ const mongoose = require('mongoose');
 mongoose.set('strictQuery', true);
 const {
 	UserSchema,
-	CoursesSchema,
 	OrderHistorySchema,
 	CourseSchema,
 	Curiculum,
 	OrderSchema,
 	AdminSchema,
-	QuizSchema
+	QuizSchema,
+	CoursesSchema
 } = require('./schema.js');
 
 async function main() {
@@ -23,14 +23,12 @@ const CuriculumModel = new mongoose.model('curiculum',Curiculum);
 const OrderModel = new mongoose.model('order',OrderSchema);
 const UserModel = new mongoose.model('user', UserSchema);
 const OrderHistoryModel = new mongoose.model('order_histori', OrderHistorySchema);
-const CoursesModel = new mongoose.model('course', CoursesSchema);
 
 CourseModel.createIndexes();
 
 module.exports ={
 	UserModel,
 	OrderHistoryModel,
-	CoursesModel,
 	CourseModel,
 	CuriculumModel,
 	OrderModel,

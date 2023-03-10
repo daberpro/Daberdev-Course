@@ -1,7 +1,7 @@
 <svelte:head>
 	<style>
 		#app{
-			background-color: #2f3e4c !important;
+			background-color: #282c35 !important;
 		}
 	</style>
 </svelte:head>
@@ -188,10 +188,14 @@
 			<i class="fa-solid fa-house"></i>
 			Back to HomePage
 		</span>
-		{#if userData.admin}
+		<span btn data-link href="/profile/my-course">
+			<i class="fa-solid fa-code"></i>
+			My Course
+		</span>
+		{#if (userData.admin || userData.super_admin)}
 			<span btn warning on:click={_=>{
 				const tokens = JSON.parse(localStorage.getItem('daberdev-tokens'));
-				location.href = `http://127.0.0.1:5174/?token=${tokens.token}&refreshToken=${tokens.refreshToken}`;
+				location.href = `http://daberdev.id:5174/?token=${tokens.token}&refreshToken=${tokens.refreshToken}`;
 			}}>
 				<i class="fa-solid fa-user"></i>
 				Open admin dashboard
@@ -200,6 +204,7 @@
 	</div>
 </div>
 <script>
+	/*import {course} from './user-data'*/
 	import {get} from 'svelte/store'
 	import {user_data} from '../lib/stores'
 	import { onMount } from 'svelte';
@@ -209,53 +214,66 @@
 
 	onMount(async () => {
 
+		console.log(userData)
 		if(Object.keys(userData).length === 0){
-			if(tokens.token){
-				localStorage.setItem("daberdev-tokens",JSON.stringify(tokens));
-				location.href = `http://${location.hostname}:5173/profile`;
-			}else{
+		  if(tokens.token){
+	        localStorage.setItem("daberdev-tokens",JSON.stringify(tokens));
+	        location.href = `http://${location.hostname}:5173/profile`;
+	      }else{
 
-				if(!localStorage.hasOwnProperty('daberdev-tokens')) return location.href = `http://${location.hostname}:5173/login`;	
-				const tokens = JSON.parse(localStorage.getItem("daberdev-tokens"));
-				
-				let data = await fetch("http://127.0.0.1:8083/profile",{
-				    method: "GET",
-				    headers:{
-				        "Content-Type":"application/json",
-				        "Authorization":"Bearer "+tokens.token
-				    }
-				}).catch(d => console.log(""));
+	        if(!localStorage.hasOwnProperty('daberdev-tokens')) return location.href = `http://${location.hostname}:5173/login`;  
+	        const tokens = JSON.parse(localStorage.getItem("daberdev-tokens"));
+	        
+	        let data = await fetch("http://daberdev.id:8083/profile",{
+	            method: "GET",
+	            headers:{
+	                "Content-Type":"application/json",
+	                "Authorization":"Bearer "+tokens.token
+	            }
+	        }).catch(d => console.log(""));
 
-				if(data.ok) return userData = await data.json().catch(d => console.log(d));
+	        if(data.ok){
+	          userData = await data.json().catch(d => console.log(d));
+	          user_data.update(d => userData);
+	          return;
+	        }
 
-				data = await fetch("http://127.0.0.1:8083/token",{
-				    method: "GET",
-				    headers:{
-				        "Content-Type":"application/json",
-				        "Authorization":"Bearer "+tokens.refreshToken
-				    }
-				}).catch(d => console.log(""));
+	        data = await fetch("http://daberdev.id:8083/token",{
+	            method: "GET",
+	            headers:{
+	                "Content-Type":"application/json",
+	                "Authorization":"Bearer "+tokens.refreshToken
+	            }
+	        }).catch(d => console.log(""));
 
-				if(data.ok){
-					const result = await data.json().catch(d => console.log(d));
-					localStorage.setItem("daberdev-tokens",JSON.stringify({token: result.token,refreshToken: tokens.refreshToken}));
-					
-					data = await fetch("http://127.0.0.1:8083/profile",{
-					    method: "GET",
-					    headers:{
-					        "Content-Type":"application/json",
-					        "Authorization":"Bearer "+tokens.token
-					    }
-					}).catch(d => console.log(""));
+	        if(data.ok){
+	          const result = await data.json().catch(d => console.log(d));
+	          localStorage.setItem("daberdev-tokens",JSON.stringify({token: result.token,refreshToken: tokens.refreshToken}));
+	          
+	          data = await fetch("http://daberdev.id:8083/profile",{
+	              method: "GET",
+	              headers:{
+	                  "Content-Type":"application/json",
+	                  "Authorization":"Bearer "+tokens.token
+	              }
+	          }).catch(d => console.log(""));
 
-					if(data.ok) return userData = await data.json().catch(d => console.log(d));
+	          if(data.ok){
+	            userData = await data.json().catch(d => console.log(d));
+	            user_data.update(d => userData);
+	            location.reload();
+	            return;
+	          }else{
+	            location.reload();
+	          }
 
+	        }else if(data.status === 403){
+	          location.href = `http://${location.hostname}:5173/login`;
+	        }
 
-				};
+	        // location.reload();
 
-				location.href = `http://${location.hostname}:5173/login`;
-
-			}
+	      }
 
 		}
 

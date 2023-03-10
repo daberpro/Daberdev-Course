@@ -51,7 +51,7 @@ checkout.post("/pay",(req,res)=>{
 		res.json({...transaction,order_id: parameter.transaction_details.order_id});
 	})
 	.catch(d => {
-		console.log(d);
+		// console.log(d);
 		res.json({
 			message: "failed to checkout"
 		})

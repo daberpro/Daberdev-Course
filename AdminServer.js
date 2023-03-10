@@ -33,7 +33,7 @@ const verify = (req,res,next)=>{
 		.findOne({username: data.username},(err,_data)=>{
 			if(err) return res.sendStatus(403);
 			if(!_data) return res.sendStatus(403);
-			if(!_data.admin) return res.sendStatus(403);
+			if(!(_data.super_admin || _data.admin)) return res.sendStatus(403);
 
 			req._data = data;
 			next();
@@ -61,7 +61,7 @@ Courses.post("/",verify,(req,res)=>{
 	.findOne({username: req._data.username},(err,_data)=>{
 		if(err) return res.sendStatus(403);
 		if(!_data) return res.sendStatus(403);
-		if(!_data.admin) return res.sendStatus(403);
+		if(!(_data.super_admin || _data.admin)) return res.sendStatus(403);
 
 		db.CourseModel
 		.find({})
@@ -88,7 +88,7 @@ Courses.post("/search",verify,(req,res)=>{
 	.findOne({username: req._data.username},(err,_data)=>{
 		if(err) return res.sendStatus(403);
 		if(!_data) return res.sendStatus(403);
-		if(!_data.admin) return res.sendStatus(403);
+		if(!(_data.super_admin || _data.admin)) return res.sendStatus(403);
 
 
 		let search = {};
@@ -114,17 +114,15 @@ Courses.post("/add",verify,(req,res)=>{
 	.findOne({username: req._data.username},async (err,_data)=>{
 		if(err) return res.sendStatus(403);
 		if(!_data) return res.sendStatus(403);
-		if(!_data.admin) return res.sendStatus(403);
+		if(!(_data.super_admin || _data.admin)) return res.sendStatus(403);
 
 		const curiculum = new db.CuriculumModel({
-			_id: new ObjectId(),
 			curiculum_id: '',
 			curiculum_file: [],
 			curiculum_video: []
 		});
 
 		const course = new db.CourseModel({
-			_id: new ObjectId(),
 			...input,
 			curiculum: curiculum._id,
 			owner: _data._id,
@@ -163,7 +161,7 @@ Courses.post("/update",[verify,upload_thumbnail.single('course_thumbnail')],(req
 	.findOne({username: req._data.username},async (err,_data)=>{
 		if(err) return res.sendStatus(403);
 		if(!_data) return res.sendStatus(403);
-		if(!_data.admin) return res.sendStatus(403);
+		if(!(_data.super_admin || _data.admin)) return res.sendStatus(403);
 
 		
 		db.CourseModel
@@ -192,7 +190,7 @@ Courses.delete("/delete",verify,(req,res)=>{
 	.findOne({username: req._data.username},(err,_data)=>{
 		if(err) return res.sendStatus(403);
 		if(!_data) return res.sendStatus(403);
-		if(!_data.admin) return res.sendStatus(403);
+		if(!(_data.super_admin || _data.admin)) return res.sendStatus(403);
 
 		db.CourseModel
 			.deleteMany({
@@ -228,9 +226,10 @@ Courses.delete("/delete",verify,(req,res)=>{
 server.get("/verify",verify,(req,res)=>{
 	db.UserModel
 	.findOne({username: req._data.username},(err,_data)=>{
+	
 		if(err) return res.sendStatus(403);
 		if(!_data) return res.sendStatus(403);
-		if(!_data.admin) return res.sendStatus(403);
+		if(!(_data.super_admin || _data.admin)) return res.sendStatus(403);
 
 		res.status(200).json({
 			status: 'authenticate'

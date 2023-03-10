@@ -36,8 +36,11 @@
     if(data.ok){
       const results = await data.json().catch(console.log);
       cours = results;
+
+      // console.log(cours)
     }else{
       console.log('failed get Courses');
+      location.reload();
     }
   }
 
@@ -52,7 +55,7 @@
         if(!localStorage.hasOwnProperty('daberdev-tokens')) return location.href = `http://${location.hostname}:5173/login`;  
         const tokens = JSON.parse(localStorage.getItem("daberdev-tokens"));
         
-        let data = await fetch("http://127.0.0.1:8083/profile",{
+        let data = await fetch("http://daberdev.id:8083/profile",{
             method: "GET",
             headers:{
                 "Content-Type":"application/json",
@@ -67,7 +70,7 @@
           return;
         }
 
-        data = await fetch("http://127.0.0.1:8083/token",{
+        data = await fetch("http://daberdev.id:8083/token",{
             method: "GET",
             headers:{
                 "Content-Type":"application/json",
@@ -79,7 +82,7 @@
           const result = await data.json().catch(d => console.log(d));
           localStorage.setItem("daberdev-tokens",JSON.stringify({token: result.token,refreshToken: tokens.refreshToken}));
           
-          data = await fetch("http://127.0.0.1:8083/profile",{
+          data = await fetch("http://daberdev.id:8083/profile",{
               method: "GET",
               headers:{
                   "Content-Type":"application/json",
@@ -91,13 +94,17 @@
             userData = await data.json().catch(d => console.log(d));
             user_data.update(d => userData);
             await getCours();
+            location.reload();
             return;
+          }else{
+            location.reload();
           }
 
-        };
+        }else if(data.status === 403){
+          location.href = `http://${location.hostname}:5173/login`;
+        }
 
-        location.reload();
-        // location.href = `http://${location.hostname}:5173/login`;
+        // location.reload();
 
       }
     }else{
@@ -121,6 +128,7 @@
     background-color: #282c35;
     padding: 40px;
     border-radius: 20px;
+    align-items: start;
     justify-content: center;
     margin-bottom:40px;
   }
@@ -208,7 +216,7 @@
   }
 
   .container-cours {
-    width: fit-content;
+    width: 100%;
     height:fit-content;
     padding:10px;
     display: flex;
@@ -246,6 +254,28 @@
       border-radius: 10px;
     }
   }
+
+  footer{
+    width: 100%;
+    height: fit-content;
+    padding: 20px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    color: gray;
+  }
+
+  footer b{
+    color: black;
+  }
+
+  footer span{
+    color: rgba(0,0,0,0.75);
+    font-weight: bold;
+  }
+
+  footer .alias{
+    color: #009688;
+  }
 </style>
 <div class="main">
   <Header brand_name="Daberdev" />
@@ -263,16 +293,22 @@
   <div class="bg1" style={`--image: url("${primaryBg}")`}></div>
   <h2 class="title" data-aos="fade-up"># Our Course</h2>
   <div class="products" data-aos="fade-up">
-    {#if cours.length === 0}
+    {#if (cours.message || (cours instanceof Array && cours.length === 0))}
       <div class="container-cours">
-        <h1>There is no content yet</h1>
+        <h1>
+          {
+            cours.message? "Congratulations" :  "There is no content yet"
+          }
+        </h1>
         <p>
-          Please waiting..
+          {
+            cours.message? cours.message :  "Please waiting.."
+          }
         </p>
       </div>
     {:else}
       {#each cours as _i}
-        <Card data={{thumbnail:_i.thumbnail,name: _i.owner.name,username:_i.owner.username,avatar:_i.owner.avatar,title: _i.course_name, description: _i.course_description,price: _i.course_price}}/>
+        <Card data={{_id: _i._id,thumbnail:_i.thumbnail,name: _i.owner.name,username:_i.owner.username,avatar:_i.owner.avatar,title: _i.course_name, description: _i.course_description,price: _i.course_price}}/>
       {/each}
     {/if}
   </div>
@@ -281,3 +317,11 @@
   <Items items={items}/>
   <Confirm/>
 </div>
+<footer>
+  <span>&copy;2023-2024</span> <br/>
+  <p>Made By 
+    <b>Ari Susanto</b>
+    <span class="alias">(Daber)</span>
+     with <i class="fa-regular fa-heart"></i>
+   </p> 
+</footer>

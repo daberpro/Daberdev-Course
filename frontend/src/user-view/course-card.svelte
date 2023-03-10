@@ -12,7 +12,6 @@
 		border-radius: 20px;
 		position: relative;
 		z-index: 3;
-		transition: 0.3s filter;
 		cursor: pointer;
 		box-shadow: 0px 0px 20px rgba(0,0,0,0.25);
 	}
@@ -49,16 +48,19 @@
 	.card .head{
 		width: 100%;
 		height: 200px;
-		background-color: #1E1E1E;
-/*		height: fit-content;*/
 		border-radius: 20px 20px 0px 0px;
 		position: relative;
+		background-color: #1E1E1E;
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		flex-direction: column;
 	}
 
 	.card .head img{
 		width: 100%;
 		height: auto;
-/*		object-fit: cover;*/
+/*		object-fit: contain;*/
 		border-radius: 20px 20px 0 0;
 	}
 
@@ -168,27 +170,11 @@
 		color: silver !important;
 		font-family: 'Poppins', sans-serif;
 	}
-
-	.disabled {
-		transition: 0.3s filter;
-		filter: grayscale(100%);
-		cursor: not-allowed;
-		-webkit-touch-callout: none; /* iOS Safari */
-    	-webkit-user-select: none; /* Safari */
-     	-khtml-user-select: none; /* Konqueror HTML */
-       	-moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
-	}
 </style>
 
 <script>
 	import {get} from "svelte/store"
-	import {show_details,details_info} from './stores'
-	import { orderItems } from "./count"
-
-	let disabled = false;
+	// import {show_details,details_info} from './stores'
 
 	export let data = {
 		title: "title",
@@ -196,24 +182,10 @@
 		price: 0
 	}
 
-	orderItems.subscribe(d => {
-		d = d.map(e => e._id);
-		disabled = d.includes(data._id || '');
-	});
-
 	let card_head = null;
 </script>
 
-<div class:disabled={disabled} data-aos="fade-up" class="card" on:click={_=>{
-
-	if(disabled) return;
-
-	show_details.update(d => !d);
-	details_info.update(d =>({
-		...data,
-		bgColor: getComputedStyle(card_head).background
-	}));
-}}>
+<div data-aos="fade-up" class="card" on:click={_=>{}}>
 	<!-- for gardient hsl background -->
 	<!-- style={`background: linear-gradient(135deg, hsl(${Math.round(Math.random() * 360)},80%,80%),hsl(${Math.round(Math.random() * 360)},80%,80%));`} -->
 	<div bind:this={card_head} class="head">
@@ -233,9 +205,6 @@
 		<p>{(data.description ?? "").slice(0,44)+((data.description ?? "").length > 44 ? "..." : '')}</p>
 		<div class="icons">
 			<i class="fa-solid fa-circle-info"></i>
-			<span>
-				{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(data.price)}
-			</span>
 		</div>
 	</div>
 </div>

@@ -1,28 +1,41 @@
 {
   "name": "simple-shop",
   "version": "1.0.0",
-  "description": "",
-  "main": "PaymentServer.js",
-  "scripts": {
-    "flow": "flow",
-    "build": "flow-remove-types ./ -d lib/",
-    "prepublish": "{{include.package_manager}} run build",
-    "dev": "nodemon --ignore node_modules/ -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "description": "1. Svelte\r dengan tambahan SPA custom yaitu ```SPA.js```\r 2. Svelte Material UI (Hanya untuk Admin page)\r [Svelte Material UI (MUI)](https://sveltematerialui.com/)\r 3. mongoose (npm)\r 4. express js (npm)\r 5. dotenv (npm)\r 6. cors (npm)\r 7. multer (npm)\r 8. jsonwebtoken (npm)\r 9. midtrans-client (npm)\r 10. passport (npm)\r 11. passport-github2 (npm)\r 12. passport-google-oauth20 (npm)\r 13. vite (npm)\r 14. aos (CDN)",
+  "main": "AdminServer.js",
   "dependencies": {
+    "aos": "^2.3.4",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "midtrans-client": "^1.3.1",
     "mongoose": "^6.10.0",
+    "mongoose-autopopulate": "^1.0.0",
     "multer": "^1.4.5-lts.1",
     "nodemon": "^2.0.20",
+    "oauth": "^0.9.15",
     "passport": "^0.6.0",
     "passport-github2": "^0.1.12",
-    "passport-google-oauth20": "^2.0.0"
-  }
+    "passport-google-oauth20": "^2.0.0",
+    "passport-oauth2": "^1.6.1",
+    "passport-strategy": "^1.0.0"
+  },
+  "devDependencies": {
+    "node-dns": "^0.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daberpro/Daberdev-Course.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daberpro/Daberdev-Course/issues"
+  },
+  "homepage": "https://github.com/daberpro/Daberdev-Course#readme"
 }

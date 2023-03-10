@@ -4,6 +4,7 @@ const server = express();
 const jwt = require("jsonwebtoken");
 const cors = require('cors');
 const db = require('./db');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 server.use(express.json());
 server.use(cors("*"));
@@ -17,6 +18,7 @@ function verify(req,res,next){
 	const token = auth.split(" ")[1];
 	jwt.verify(token,process.env.SECRET,(err,data)=>{
 		
+		// console.log(err)
 		if(err) return res.sendStatus(403);
 
 		db.UserModel
@@ -65,7 +67,6 @@ server.get("/token",(req,res)=>{
 	const token = auth.split(" ")[1];
 	jwt.verify(token,process.env.REFRESH,(err,data)=>{
 		
-		
 		if(err) return res.sendStatus(403);
 
 		db.UserModel
@@ -84,64 +85,67 @@ server.get("/token",(req,res)=>{
 server.get("/profile",verify,(req,res)=>{
 	db.UserModel
 	.findOne({username: req._data.username})
-	.populate("courses")
-	.populate("order_history")
 	.exec((err,_data)=>{
 		
 		if(err) return res.sendStatus(403);
 		if(!_data) return res.sendStatus(403);
+
+		// console.log({..._data._doc,ref_token: ''})
 		res.json({..._data._doc,ref_token: ''});
 	});
 });
 
 server.post("/new-order",verify,(req,res)=>{
 
-	const items = req.body.items || [];
-	db.UserModel
-	.findOne({username: data.username},(err,_data)=>{
-		if(err) return res.sendStatus(403);
-		if(!_data) return res.sendStatus(403);
+	const items = req.body || [];
 
-		const status = {
-			history: false
-		}
-		
+	const new_order = new db.OrderModel({
+		order_id: items.order_id,
+		status: 'not paid',
+		courses: [...items.items.map(d => d._id)],
+		time: new Date()
+	});
+
+	new_order.save((err)=>{
+		if(err) return res.sendStatus(500);
 		db.OrderHistoryModel.findOneAndUpdate(
-			{_id: _data.courses},
+			{_id: req._data.order_history},
 			{
 				$push: {
-					order_history: items.order_id
+					order_history: new_order._id
 				}
 			},
-			(err,courses)=>{
+			(err,data)=>{
+				
+				console.log(err);
 				if(err) return res.sendStatus(400);
-				status.history = true;
-			}
-		);
 
-		if (status.history) {
-			db.CoursesModel.findOneAndUpdate(
-				{_id: _data.courses},
+				db.UserModel.findOneAndUpdate({
+					_id: req._data._id
+				},
 				{
 					$push: {
-						courses: items.items.map(d => d._id)
+						courses: [...items.items.map(d => d._id)]
 					}
-				},
-				(err,courses)=>{
-					if(err) return res.sendStatus(400);
+				},(err,_d)=>{
+
+					// console.log(_d);
+					if(err) return res.sendStatus(500);
 					res.json({
 						status: "success"
 					})
-				}
-			);
-		}
 
-	});
+				})
+
+			}
+		);
+	})
 
 });
 
 server.post("/order-status",verify,async (req,res)=>{
-	const tokens = req.body.tokens;
+	const tokens = req.body;
+	// console.log(req.body)
 
 	if(tokens.current_order){
 		const result = await fetch(`https://api.sandbox.midtrans.com/v2/${tokens.current_order}/status`,{
@@ -154,9 +158,39 @@ server.post("/order-status",verify,async (req,res)=>{
 		}).catch(d => console.log(d));
 
 		if(result.ok){
-			res.json(await result.json().catch(d => console.log(d)))
+			const order_data = await result.json().catch(console.log);
+			if(order_data.transaction_status === "settlement" || order_data.transaction_status === "capture"){
+				db.OrderModel.findOne({
+					order_id: req.body.current_order
+				},(err,result)=>{
+					if(err) return res.sendStatus(500);
+
+					if(result.status !== "paid off"){
+						db.OrderModel.findOneAndUpdate({
+							_id: result._id
+						},
+						{status: 'paid off'},
+						(_err)=> {
+							if(_err) return res.sendStatus(500);
+							res.json({
+								status: 'paid off'
+							})
+						})
+					}else{
+						res.json({
+							status: 'paid off'
+						})
+					}
+				});
+			}else{
+				res.json({
+					status: order_data.transaction_status
+				});
+			}
 		}else{
-			res.json({});
+			res.json({
+				status: 'not paid'
+			});
 		}
 	}else{
 		res.sendStatus(401)
@@ -167,8 +201,9 @@ server.post("/cours",verify,(req,res)=>{
 
 	db.CourseModel
 	.find({})
+	.where("_id")
+	.nin(req._data.courses.map(d => d._id.toString()))
 	.limit(10)
-	.populate('owner')
 	.exec((err,data)=>{
 		if(err) return res.sendStatus(500);
 
@@ -183,7 +218,15 @@ server.post("/cours",verify,(req,res)=>{
 			})
 		);
 
+		if(data.length === 0){
+			res.status(200).json({
+				message: 'Wow! you have all course'
+			});
+			return;
+		}
+
 		res.status(200).json(data);
+
 
 	});
 
